@@ -67,6 +67,11 @@ namespace AreaX.Managers
             {
                 RhythmStarfield.CreateDefault();
             }
+
+            if (FindFirstObjectByType<StageVisualDirector>() == null)
+            {
+                StageVisualDirector.CreateDefault();
+            }
         }
 
         private void DisablePrototypeTargetSpawner()
