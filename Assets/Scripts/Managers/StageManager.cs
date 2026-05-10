@@ -1,6 +1,7 @@
 using UnityEngine;
 using AreaX.Targets;
 using AreaX.Boss;
+using AreaX.UI;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -13,6 +14,7 @@ namespace AreaX.Managers
         private List<Target> _allTargets = new List<Target>();
         private bool _isGameEnded = false;
         private SeaSerpentBoss _boss;
+        private BossStageHUD _hud;
 
         private void Awake()
         {
@@ -54,6 +56,11 @@ namespace AreaX.Managers
             {
                 spawner.gameObject.SetActive(false);
             }
+
+            if (_hud == null && _boss != null)
+            {
+                _hud = BossStageHUD.Create(_boss);
+            }
         }
 
         private void DisablePrototypeTargetSpawner()
@@ -91,6 +98,10 @@ namespace AreaX.Managers
         {
             _isGameEnded = true;
             Debug.Log("STAGE COMPLETED - All Targets Processed");
+            if (_hud != null)
+            {
+                _hud.ShowComplete();
+            }
             
             // Stop Music? Or Fade out?
             // "BGM終了と同時に体験を終了する" -> If BGM is long, we might just wait.

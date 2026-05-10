@@ -47,6 +47,9 @@ namespace AreaX.Boss
 
         public IReadOnlyList<Target> LockPoints => _lockPoints;
         public bool IsDefeated => _remainingLockPoints <= 0 && _lockPoints.Count > 0;
+        public int CurrentPhase => _currentPhase + 1;
+        public int PhaseCount => _phaseCount;
+        public int RemainingLockPoints => _remainingLockPoints;
 
         public static SeaSerpentBoss CreateDefault()
         {
