@@ -3,12 +3,16 @@ using UnityEngine;
 namespace AreaX.Managers
 {
     [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(MusicClock))]
     public class MusicManager : MonoBehaviour
     {
         public static MusicManager Instance { get; private set; }
         private AudioSource _audioSource;
+        private MusicClock _clock;
 
         [SerializeField] private AreaX.Audio.MusicData _musicData;
+
+        public MusicClock Clock => _clock;
 
         private void Awake()
         {
@@ -19,10 +23,13 @@ namespace AreaX.Managers
             }
             Instance = this;
             _audioSource = GetComponent<AudioSource>();
+            _clock = GetComponent<MusicClock>();
             
             // Standard settings for BGM
             _audioSource.playOnAwake = false;
             _audioSource.loop = false;
+
+            _clock.Initialize(_audioSource, _musicData);
         }
 
         public void PlayMusic()
@@ -42,8 +49,8 @@ namespace AreaX.Managers
             // Play
             if (_musicData.Clip != null)
             {
-                _audioSource.clip = _musicData.Clip;
-                _audioSource.Play();
+                _clock.Initialize(_audioSource, _musicData);
+                _clock.PlayScheduled();
             }
         }
         
@@ -54,16 +61,14 @@ namespace AreaX.Managers
 
         public double GetAudioTime()
         {
-            if (_audioSource.clip == null) return 0;
-            // Subtract offset if needed? 
-            // For now, raw time. Offset logic involves rescheduling hits which is complex.
-            // Let's assume audio starts at 0 for simplicity or handle Offset later.
-            return (double)_audioSource.timeSamples / _audioSource.clip.frequency;
+            if (_clock == null) return 0;
+            return _clock.SongTime;
         }
         
         public bool IsPlaying()
         {
-            return _audioSource.isPlaying;
+            if (_clock == null) return false;
+            return _clock.IsSongActive();
         }
     }
 }

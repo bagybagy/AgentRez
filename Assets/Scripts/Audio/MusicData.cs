@@ -17,5 +17,8 @@ namespace AreaX.Audio
 
         [Tooltip("Offset in seconds to the first beat")]
         public float Offset = 0f;
+
+        [Header("Timeline")]
+        public MusicTimeline Timeline;
     }
 }
