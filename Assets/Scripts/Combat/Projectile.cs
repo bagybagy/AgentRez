@@ -11,6 +11,8 @@ namespace AreaX.Combat
         [SerializeField] private GameObject _impactVFX;
         [SerializeField] private float _initialSpeedRange = 20f;
         [SerializeField] private float _fallbackFlightTime = 0.65f;
+        [SerializeField] private Color _projectileColor = new Color(0.4f, 1f, 1f, 1f);
+        [SerializeField] private Color _impactColor = new Color(1f, 0.35f, 0.08f, 1f);
 
         private Target _target;
         private double _impactTime;
@@ -23,6 +25,8 @@ namespace AreaX.Combat
 
         public void Initialize(Target target, double impactTime)
         {
+            ConfigureTrail();
+
             _target = target;
             _impactTime = impactTime;
             _spawnSongTime = GetSongTime();
@@ -121,8 +125,90 @@ namespace AreaX.Combat
             {
                 Instantiate(_impactVFX, transform.position, Quaternion.identity);
             }
+            else
+            {
+                SpawnImpactBurst(transform.position);
+            }
             
             Destroy(gameObject);
+        }
+
+        private void ConfigureTrail()
+        {
+            TrailRenderer trail = GetComponent<TrailRenderer>();
+            if (trail == null) return;
+
+            trail.time = 0.42f;
+            trail.minVertexDistance = 0.04f;
+            trail.widthMultiplier = 0.16f;
+            trail.numCapVertices = 4;
+            trail.numCornerVertices = 2;
+
+            Gradient gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(_projectileColor, 0.45f),
+                    new GradientColorKey(new Color(0.05f, 0.25f, 1f, 1f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0.75f, 0.35f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+            );
+            trail.colorGradient = gradient;
+
+            Material material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            material.color = _projectileColor;
+            trail.sharedMaterial = material;
+        }
+
+        private void SpawnImpactBurst(Vector3 position)
+        {
+            GameObject burst = new GameObject("ProjectileImpactBurst");
+            burst.transform.position = position;
+
+            ParticleSystem particles = burst.AddComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = particles.main;
+            main.duration = 0.05f;
+            main.loop = false;
+            main.startLifetime = 0.55f;
+            main.startSpeed = 7.5f;
+            main.startSize = 0.09f;
+            main.startColor = _impactColor;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            ParticleSystem.EmissionModule emission = particles.emission;
+            emission.enabled = false;
+
+            ParticleSystem.ShapeModule shape = particles.shape;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.18f;
+
+            ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particles.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            Gradient gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(_impactColor, 0.35f),
+                    new GradientColorKey(_projectileColor, 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0.8f, 0.35f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+            );
+            colorOverLifetime.color = gradient;
+
+            particles.Emit(42);
+            Destroy(burst, 0.8f);
         }
 
         private static double GetSongTime()
