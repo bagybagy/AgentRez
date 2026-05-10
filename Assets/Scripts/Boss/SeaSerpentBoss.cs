@@ -29,6 +29,7 @@ namespace AreaX.Boss
         [SerializeField] private Color _lockPointColor = new Color(0.2f, 0.95f, 1f, 1f);
         [SerializeField] private Color _lockedColor = new Color(1f, 0.2f, 0.12f, 1f);
         [SerializeField] private Color _inactiveColor = new Color(0.02f, 0.08f, 0.12f, 1f);
+        [SerializeField] private Color _eyeColor = new Color(1f, 0.08f, 0.02f, 1f);
 
         [Header("Reaction VFX")]
         [SerializeField] private int _hitBurstCount = 28;
@@ -42,6 +43,7 @@ namespace AreaX.Boss
         private Material _bodyMaterial;
         private Material _lockPointMaterial;
         private Material _inactiveLockPointMaterial;
+        private Material _eyeMaterial;
         private int _remainingLockPoints;
         private int _currentPhase;
 
@@ -104,9 +106,10 @@ namespace AreaX.Boss
         private Transform CreateSegment(int index)
         {
             GameObject segment = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            segment.name = $"{SegmentName}_{index:00}";
+            bool isHead = index == _segmentCount - 1;
+            segment.name = isHead ? "SerpentHead" : $"{SegmentName}_{index:00}";
             segment.transform.SetParent(transform, false);
-            segment.transform.localScale = Vector3.one * _segmentRadius;
+            segment.transform.localScale = Vector3.one * _segmentRadius * (isHead ? 1.55f : 1f);
 
             Renderer renderer = segment.GetComponent<Renderer>();
             if (renderer != null)
@@ -120,7 +123,39 @@ namespace AreaX.Boss
                 collider.enabled = false;
             }
 
+            if (isHead)
+            {
+                CreateEyes(segment.transform);
+            }
+
             return segment.transform;
+        }
+
+        private void CreateEyes(Transform head)
+        {
+            CreateEye(head, new Vector3(-0.34f, 0.28f, 0.78f));
+            CreateEye(head, new Vector3(0.34f, 0.28f, 0.78f));
+        }
+
+        private void CreateEye(Transform head, Vector3 localPosition)
+        {
+            GameObject eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            eye.name = "SerpentEye";
+            eye.transform.SetParent(head, false);
+            eye.transform.localPosition = localPosition;
+            eye.transform.localScale = Vector3.one * 0.16f;
+
+            Renderer renderer = eye.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.sharedMaterial = _eyeMaterial;
+            }
+
+            Collider collider = eye.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
         }
 
         private Transform CreateLink(int index)
@@ -320,6 +355,11 @@ namespace AreaX.Boss
             _inactiveLockPointMaterial.color = _inactiveColor;
             _inactiveLockPointMaterial.EnableKeyword("_EMISSION");
             _inactiveLockPointMaterial.SetColor("_EmissionColor", _inactiveColor * 0.5f);
+
+            _eyeMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _eyeMaterial.color = _eyeColor;
+            _eyeMaterial.EnableKeyword("_EMISSION");
+            _eyeMaterial.SetColor("_EmissionColor", _eyeColor * 3f);
         }
 
         private void SpawnParticleBurst(Vector3 position, Color color, int count, float size, float speed)
