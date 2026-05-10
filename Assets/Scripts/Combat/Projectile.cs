@@ -10,9 +10,13 @@ namespace AreaX.Combat
         [Header("VFX")]
         [SerializeField] private GameObject _impactVFX;
         [SerializeField] private float _initialSpeedRange = 20f;
+        [SerializeField] private float _fallbackFlightTime = 0.65f;
 
         private Target _target;
         private double _impactTime;
+        private double _spawnSongTime;
+        private float _spawnRealtime;
+        private float _fallbackImpactRealtime;
         private Vector3 _velocity;
         private bool _isInitialized = false;
         private bool _hitSoundScheduled;
@@ -21,6 +25,13 @@ namespace AreaX.Combat
         {
             _target = target;
             _impactTime = impactTime;
+            _spawnSongTime = GetSongTime();
+            _spawnRealtime = Time.time;
+            _fallbackImpactRealtime = _spawnRealtime + Mathf.Max(0.12f, (float)(_impactTime - _spawnSongTime));
+            if (_fallbackImpactRealtime <= _spawnRealtime + 0.05f)
+            {
+                _fallbackImpactRealtime = _spawnRealtime + _fallbackFlightTime;
+            }
             
             // Initial Velocity (Randomized for dispersal)
             _velocity = Random.insideUnitSphere * _initialSpeedRange;
@@ -46,8 +57,12 @@ namespace AreaX.Combat
                 return;
             }
 
-            double currentTime = MusicManager.Instance.GetAudioTime();
+            double currentTime = GetSongTime();
             double timeRemaining = _impactTime - currentTime; // period
+            if (MusicManager.Instance == null || MusicManager.Instance.Clock == null || !MusicManager.Instance.Clock.HasStarted)
+            {
+                timeRemaining = _fallbackImpactRealtime - Time.time;
+            }
 
             // Check for Impact
             if (timeRemaining <= 0f)
@@ -94,6 +109,7 @@ namespace AreaX.Combat
         {
             if (_target != null)
             {
+                transform.position = _target.transform.position;
                 _target.OnHit();
                 if (!_hitSoundScheduled && AreaX.Audio.HitSoundSynthesizer.Instance != null)
                 {
@@ -107,6 +123,16 @@ namespace AreaX.Combat
             }
             
             Destroy(gameObject);
+        }
+
+        private static double GetSongTime()
+        {
+            if (MusicManager.Instance == null)
+            {
+                return 0d;
+            }
+
+            return MusicManager.Instance.GetAudioTime();
         }
     }
 }
