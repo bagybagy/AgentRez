@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.VFX;
+using System;
 
 namespace AreaX.Targets
 {
@@ -16,27 +17,36 @@ namespace AreaX.Targets
         [SerializeField] private VisualEffect _targetVFX;
         [SerializeField] private Collider _collider;
         
+        public event Action<Target> Locked;
+        public event Action<Target> Hit;
+
         public TargetState State { get; private set; } = TargetState.Idle;
 
         private void Start()
         {
+            if (_collider == null)
+            {
+                _collider = GetComponent<Collider>();
+            }
+
             if (AreaX.Managers.StageManager.Instance != null)
             {
                 AreaX.Managers.StageManager.Instance.RegisterTarget(this);
             }
         }
 
-        public void OnLockOn()
+        public virtual void OnLockOn()
         {
             if (State == TargetState.Idle)
             {
                 State = TargetState.Locked;
+                Locked?.Invoke(this);
                 // Visual feedback for lock-on will be handled here or by LockOnSystem
                 // e.g., show a marker or change emission color
             }
         }
 
-        public void OnLockedCancelled()
+        public virtual void OnLockedCancelled()
         {
             if (State == TargetState.Locked)
             {
@@ -44,11 +54,13 @@ namespace AreaX.Targets
             }
         }
 
-        public void OnHit()
+        public virtual void OnHit()
         {
             if (State == TargetState.Processed) return;
 
             State = TargetState.Processed;
+            Hit?.Invoke(this);
+
             // Disable collider so it can't be locked again
             if (_collider != null) _collider.enabled = false;
 

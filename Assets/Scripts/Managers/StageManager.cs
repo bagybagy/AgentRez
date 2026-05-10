@@ -1,5 +1,6 @@
 using UnityEngine;
 using AreaX.Targets;
+using AreaX.Boss;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -11,6 +12,7 @@ namespace AreaX.Managers
 
         private List<Target> _allTargets = new List<Target>();
         private bool _isGameEnded = false;
+        private SeaSerpentBoss _boss;
 
         private void Awake()
         {
@@ -20,10 +22,13 @@ namespace AreaX.Managers
                 return;
             }
             Instance = this;
+            DisablePrototypeTargetSpawner();
         }
 
         private void Start()
         {
+            EnsureBossStage();
+
             // Start Game Session
             if (MusicManager.Instance != null)
             {
@@ -33,6 +38,30 @@ namespace AreaX.Managers
             if (BeatManager.Instance != null)
             {
                 BeatManager.Instance.StartRhythm();
+            }
+        }
+
+        private void EnsureBossStage()
+        {
+            _boss = FindObjectOfType<SeaSerpentBoss>();
+            if (_boss == null)
+            {
+                _boss = SeaSerpentBoss.CreateDefault();
+            }
+
+            TargetSpawner spawner = FindObjectOfType<TargetSpawner>();
+            if (spawner != null)
+            {
+                spawner.gameObject.SetActive(false);
+            }
+        }
+
+        private void DisablePrototypeTargetSpawner()
+        {
+            TargetSpawner spawner = FindObjectOfType<TargetSpawner>();
+            if (spawner != null)
+            {
+                spawner.gameObject.SetActive(false);
             }
         }
         
