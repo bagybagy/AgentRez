@@ -45,13 +45,13 @@ namespace AreaX.Managers
 
         private void EnsureBossStage()
         {
-            _boss = FindObjectOfType<SeaSerpentBoss>();
+            _boss = FindFirstObjectByType<SeaSerpentBoss>();
             if (_boss == null)
             {
                 _boss = SeaSerpentBoss.CreateDefault();
             }
 
-            TargetSpawner spawner = FindObjectOfType<TargetSpawner>();
+            TargetSpawner spawner = FindFirstObjectByType<TargetSpawner>();
             if (spawner != null)
             {
                 spawner.gameObject.SetActive(false);
@@ -65,7 +65,7 @@ namespace AreaX.Managers
 
         private void DisablePrototypeTargetSpawner()
         {
-            TargetSpawner spawner = FindObjectOfType<TargetSpawner>();
+            TargetSpawner spawner = FindFirstObjectByType<TargetSpawner>();
             if (spawner != null)
             {
                 spawner.gameObject.SetActive(false);

@@ -172,7 +172,7 @@ namespace AreaX.Tools
             _statusText.text = $"Saved to {path}";
             
             // Auto-assign to MusicManager in scene if present?
-            var musicMgr = FindObjectOfType<Managers.MusicManager>();
+            var musicMgr = FindFirstObjectByType<Managers.MusicManager>();
             // musicMgr is private serialized field, can't easily access without reflection or public method.
             // But user task will handle assignment.
 #else

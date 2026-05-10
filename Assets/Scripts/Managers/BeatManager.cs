@@ -20,7 +20,6 @@ namespace AreaX.Managers
         private double _nextBeatTime;
         private int _beatCount;
         private bool _isPlaying;
-        private double _startTime;
 
         private void Awake()
         {
@@ -46,7 +45,6 @@ namespace AreaX.Managers
 
         public void StartRhythm()
         {
-            _startTime = 0; // Relative to audio start
             _nextBeatTime = 0;
             _beatCount = 0;
             _isPlaying = true;

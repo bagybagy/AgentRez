@@ -26,7 +26,7 @@ namespace AreaX.Combat
         {
 #if ENABLE_INPUT_SYSTEM
             _playerInput = GetComponent<PlayerInput>(); // Assuming attached to Player
-            if (_playerInput == null) _playerInput = FindObjectOfType<PlayerInput>();
+            if (_playerInput == null) _playerInput = FindFirstObjectByType<PlayerInput>();
             
             if (_playerInput != null)
             {

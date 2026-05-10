@@ -14,7 +14,7 @@ namespace AreaX.UI
 
         public static BossStageHUD Create(SeaSerpentBoss boss)
         {
-            Canvas canvas = FindObjectOfType<Canvas>();
+            Canvas canvas = FindFirstObjectByType<Canvas>();
             if (canvas == null)
             {
                 GameObject canvasObject = new GameObject("BossStageCanvas");

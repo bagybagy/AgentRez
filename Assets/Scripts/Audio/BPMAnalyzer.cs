@@ -44,13 +44,10 @@ namespace AreaX.Audio
             // 2. Detect Peaks
             // Threshold based on local average
             List<int> peakIndices = new List<int>();
-            float threshold = 0.5f; // Dynamic?
-            
             // Calculate local average to determine dynamic threshold
             int windowSize = 44100 / 5; // ~0.2s
             for (int i = windowSize; i < sampleCount - windowSize; i += 100) // Skip some samples for speed
             {
-                float localAvg = 0;
                 // Simple check: Is this sample significantly higher than neighbors?
                 // Proper way: Spectral Flux or similar. 
                 // Let's implement a very simple "High Amplitude" detector for this prototype.
