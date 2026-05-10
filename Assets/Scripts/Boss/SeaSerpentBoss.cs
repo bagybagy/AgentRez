@@ -216,7 +216,12 @@ namespace AreaX.Boss
         {
             if (_segments.Count == 0) return;
 
-            float time = Time.time * _bodyWaveSpeed;
+            float songTime = GetSongTime();
+            float beatPulse = GetBeatPulse();
+            float phasePressure = 1f + _currentPhase * 0.16f;
+            float waveAmplitude = _bodyWaveAmplitude * phasePressure * (1f + beatPulse * 0.12f);
+            float time = songTime * _bodyWaveSpeed;
+
             for (int i = 0; i < _segments.Count; i++)
             {
                 float t = _segments.Count <= 1 ? 0f : i / (float)(_segments.Count - 1);
@@ -225,7 +230,7 @@ namespace AreaX.Boss
                 float verticalWave = Mathf.Cos(time * 0.7f + i * _bodyWaveFrequency) * 1.4f;
 
                 Vector3 position = _origin + new Vector3(
-                    wave * _bodyWaveAmplitude,
+                    wave * waveAmplitude,
                     verticalWave,
                     z
                 );
@@ -245,6 +250,7 @@ namespace AreaX.Boss
             }
 
             UpdateBodyLinks();
+            AnimateLockPointPulse(beatPulse);
         }
 
         private void UpdateBodyLinks()
@@ -265,6 +271,40 @@ namespace AreaX.Boss
 
                 link.localScale = new Vector3(_segmentRadius * 0.68f, length * 0.5f, _segmentRadius * 0.68f);
             }
+        }
+
+        private void AnimateLockPointPulse(float beatPulse)
+        {
+            for (int i = 0; i < _lockPoints.Count; i++)
+            {
+                Target lockPoint = _lockPoints[i];
+                if (lockPoint == null || lockPoint.State == TargetState.Processed) continue;
+
+                float scale = lockPoint.IsLockable ? 1f + beatPulse * 0.35f : 0.72f + beatPulse * 0.08f;
+                lockPoint.transform.localScale = Vector3.one * _lockPointRadius * scale;
+            }
+        }
+
+        private float GetSongTime()
+        {
+            if (MusicManager.Instance != null && MusicManager.Instance.Clock != null && MusicManager.Instance.Clock.HasStarted)
+            {
+                return (float)MusicManager.Instance.Clock.SongTime;
+            }
+
+            return Time.time;
+        }
+
+        private float GetBeatPulse()
+        {
+            if (MusicManager.Instance == null || MusicManager.Instance.Clock == null)
+            {
+                return 0f;
+            }
+
+            float phase = (float)MusicManager.Instance.Clock.BeatPhase;
+            float pulse = 1f - Mathf.Clamp01(phase * 2.5f);
+            return pulse * pulse;
         }
 
         private void HandleLockPointLocked(Target target)
