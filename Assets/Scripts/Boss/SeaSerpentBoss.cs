@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using AreaX.Targets;
 using AreaX.Managers;
@@ -46,6 +47,7 @@ namespace AreaX.Boss
         private Material _eyeMaterial;
         private int _remainingLockPoints;
         private int _currentPhase;
+        private bool _defeatStarted;
 
         public IReadOnlyList<Target> LockPoints => _lockPoints;
         public bool IsDefeated => _remainingLockPoints <= 0 && _lockPoints.Count > 0;
@@ -99,6 +101,7 @@ namespace AreaX.Boss
 
             _remainingLockPoints = _lockPoints.Count;
             _currentPhase = 0;
+            _defeatStarted = false;
             ActivatePhase(_currentPhase);
             AnimateBody();
         }
@@ -366,6 +369,7 @@ namespace AreaX.Boss
             _currentPhase++;
             if (_currentPhase >= _phaseCount)
             {
+                BeginDefeat();
                 return;
             }
 
@@ -377,6 +381,45 @@ namespace AreaX.Boss
                 float pulse = 1f + _currentPhase * 0.15f;
                 _bodyMaterial.SetColor("_EmissionColor", _bodyColor * pulse);
             }
+        }
+
+        private void BeginDefeat()
+        {
+            if (_defeatStarted) return;
+
+            _defeatStarted = true;
+            _bodyMaterial.SetColor("_EmissionColor", _lockedColor * 2.2f);
+            StartCoroutine(DefeatCollapseRoutine());
+        }
+
+        private IEnumerator DefeatCollapseRoutine()
+        {
+            SpawnParticleBurst(transform.position + _origin, _lockedColor, _phasePulseCount * 2, 0.24f, 15f);
+
+            for (int i = _segments.Count - 1; i >= 0; i--)
+            {
+                Transform segment = _segments[i];
+                if (segment != null)
+                {
+                    SpawnParticleBurst(segment.position, _lockedColor, _hitBurstCount, 0.12f, 7f);
+                    segment.gameObject.SetActive(false);
+                }
+
+                if (i < _links.Count && _links[i] != null)
+                {
+                    _links[i].gameObject.SetActive(false);
+                }
+
+                if (i > 0 && i - 1 < _links.Count && _links[i - 1] != null)
+                {
+                    _links[i - 1].gameObject.SetActive(false);
+                }
+
+                yield return new WaitForSeconds(0.045f);
+            }
+
+            yield return new WaitForSeconds(1.2f);
+            Destroy(gameObject);
         }
 
         private void CreateMaterials()
