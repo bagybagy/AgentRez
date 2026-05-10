@@ -24,6 +24,10 @@ namespace AreaX.Managers
             Instance = this;
             _audioSource = GetComponent<AudioSource>();
             _clock = GetComponent<MusicClock>();
+            if (_clock == null)
+            {
+                _clock = gameObject.AddComponent<MusicClock>();
+            }
             
             // Standard settings for BGM
             _audioSource.playOnAwake = false;
