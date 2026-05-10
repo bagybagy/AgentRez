@@ -30,6 +30,11 @@ namespace AreaX.Boss
         [SerializeField] private Color _lockedColor = new Color(1f, 0.2f, 0.12f, 1f);
         [SerializeField] private Color _inactiveColor = new Color(0.02f, 0.08f, 0.12f, 1f);
 
+        [Header("Reaction VFX")]
+        [SerializeField] private int _hitBurstCount = 28;
+        [SerializeField] private int _phasePulseCount = 120;
+        [SerializeField] private float _particleLife = 0.8f;
+
         private readonly List<Transform> _segments = new List<Transform>();
         private readonly List<Target> _lockPoints = new List<Target>();
         private readonly Dictionary<Target, int> _lockPointPhases = new Dictionary<Target, int>();
@@ -186,6 +191,7 @@ namespace AreaX.Boss
         private void HandleLockPointHit(Target target)
         {
             _remainingLockPoints = Mathf.Max(0, _remainingLockPoints - 1);
+            SpawnParticleBurst(target.transform.position, _lockPointColor, _hitBurstCount, 0.08f, 5f);
 
             if (!HasActiveLockPointInPhase(_currentPhase))
             {
@@ -236,6 +242,7 @@ namespace AreaX.Boss
             }
 
             ActivatePhase(_currentPhase);
+            SpawnParticleBurst(transform.position + _origin, _lockedColor, _phasePulseCount, 0.16f, 11f);
 
             if (BeatManager.Instance != null)
             {
@@ -260,6 +267,52 @@ namespace AreaX.Boss
             _inactiveLockPointMaterial.color = _inactiveColor;
             _inactiveLockPointMaterial.EnableKeyword("_EMISSION");
             _inactiveLockPointMaterial.SetColor("_EmissionColor", _inactiveColor * 0.5f);
+        }
+
+        private void SpawnParticleBurst(Vector3 position, Color color, int count, float size, float speed)
+        {
+            GameObject burst = new GameObject("SerpentPulse");
+            burst.transform.position = position;
+
+            ParticleSystem particles = burst.AddComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = particles.main;
+            main.duration = 0.08f;
+            main.loop = false;
+            main.startLifetime = _particleLife;
+            main.startSpeed = speed;
+            main.startSize = size;
+            main.startColor = color;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            ParticleSystem.EmissionModule emission = particles.emission;
+            emission.enabled = false;
+
+            ParticleSystem.ShapeModule shape = particles.shape;
+            shape.enabled = true;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.35f;
+
+            ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particles.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            Gradient gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(color, 0f),
+                    new GradientColorKey(Color.white, 0.35f),
+                    new GradientColorKey(color, 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0.75f, 0.35f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+            );
+            colorOverLifetime.color = gradient;
+
+            particles.Emit(count);
+            Destroy(burst, _particleLife + 0.2f);
         }
 
         private void ClearChildren()
