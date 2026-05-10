@@ -2,6 +2,7 @@ using UnityEngine;
 using AreaX.Targets;
 using AreaX.Boss;
 using AreaX.UI;
+using AreaX.Environment;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -60,6 +61,11 @@ namespace AreaX.Managers
             if (_hud == null && _boss != null)
             {
                 _hud = BossStageHUD.Create(_boss);
+            }
+
+            if (FindFirstObjectByType<RhythmStarfield>() == null)
+            {
+                RhythmStarfield.CreateDefault();
             }
         }
 
