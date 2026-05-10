@@ -78,7 +78,7 @@ namespace AreaX.Managers
             if (_allTargets.Count > 0)
             {
                 // Check if any active/idle/locked target exists
-                bool anyAlive = _allTargets.Any(t => t.State != TargetState.Processed);
+                bool anyAlive = _allTargets.Any(t => t != null && t.IsLockable);
                 
                 if (!anyAlive)
                 {

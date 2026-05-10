@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AreaX.Targets;
+using AreaX.Managers;
 using UnityEngine;
 
 namespace AreaX.Boss
@@ -12,6 +13,7 @@ namespace AreaX.Boss
         [Header("Body")]
         [SerializeField, Min(4)] private int _segmentCount = 18;
         [SerializeField, Min(1)] private int _lockPointsPerSegment = 2;
+        [SerializeField, Min(1)] private int _phaseCount = 3;
         [SerializeField] private float _segmentSpacing = 3.2f;
         [SerializeField] private float _segmentRadius = 1.2f;
         [SerializeField] private float _bodyWaveAmplitude = 5f;
@@ -26,12 +28,16 @@ namespace AreaX.Boss
         [SerializeField] private Color _bodyColor = new Color(0.08f, 0.24f, 0.42f, 1f);
         [SerializeField] private Color _lockPointColor = new Color(0.2f, 0.95f, 1f, 1f);
         [SerializeField] private Color _lockedColor = new Color(1f, 0.2f, 0.12f, 1f);
+        [SerializeField] private Color _inactiveColor = new Color(0.02f, 0.08f, 0.12f, 1f);
 
         private readonly List<Transform> _segments = new List<Transform>();
         private readonly List<Target> _lockPoints = new List<Target>();
+        private readonly Dictionary<Target, int> _lockPointPhases = new Dictionary<Target, int>();
         private Material _bodyMaterial;
         private Material _lockPointMaterial;
+        private Material _inactiveLockPointMaterial;
         private int _remainingLockPoints;
+        private int _currentPhase;
 
         public IReadOnlyList<Target> LockPoints => _lockPoints;
         public bool IsDefeated => _remainingLockPoints <= 0 && _lockPoints.Count > 0;
@@ -65,6 +71,7 @@ namespace AreaX.Boss
 
             _segments.Clear();
             _lockPoints.Clear();
+            _lockPointPhases.Clear();
 
             for (int i = 0; i < _segmentCount; i++)
             {
@@ -74,6 +81,8 @@ namespace AreaX.Boss
             }
 
             _remainingLockPoints = _lockPoints.Count;
+            _currentPhase = 0;
+            ActivatePhase(_currentPhase);
             AnimateBody();
         }
 
@@ -122,7 +131,14 @@ namespace AreaX.Boss
                 target.Locked += HandleLockPointLocked;
                 target.Hit += HandleLockPointHit;
                 _lockPoints.Add(target);
+                _lockPointPhases[target] = GetPhaseForSegment(segmentIndex);
             }
+        }
+
+        private int GetPhaseForSegment(int segmentIndex)
+        {
+            float normalized = _segmentCount <= 1 ? 0f : segmentIndex / (float)(_segmentCount - 1);
+            return Mathf.Clamp(Mathf.FloorToInt(normalized * _phaseCount), 0, _phaseCount - 1);
         }
 
         private void AnimateBody()
@@ -170,17 +186,80 @@ namespace AreaX.Boss
         private void HandleLockPointHit(Target target)
         {
             _remainingLockPoints = Mathf.Max(0, _remainingLockPoints - 1);
+
+            if (!HasActiveLockPointInPhase(_currentPhase))
+            {
+                AdvancePhase();
+            }
+        }
+
+        private void ActivatePhase(int phase)
+        {
+            for (int i = 0; i < _lockPoints.Count; i++)
+            {
+                Target lockPoint = _lockPoints[i];
+                bool isActivePhase = _lockPointPhases.TryGetValue(lockPoint, out int pointPhase) && pointPhase == phase;
+                bool lockable = isActivePhase && lockPoint.State != TargetState.Processed;
+                lockPoint.SetLockable(lockable);
+
+                Renderer renderer = lockPoint.GetComponent<Renderer>();
+                if (renderer != null && lockPoint.State != TargetState.Processed)
+                {
+                    renderer.enabled = true;
+                    renderer.sharedMaterial = lockable ? _lockPointMaterial : _inactiveLockPointMaterial;
+                }
+            }
+        }
+
+        private bool HasActiveLockPointInPhase(int phase)
+        {
+            for (int i = 0; i < _lockPoints.Count; i++)
+            {
+                Target lockPoint = _lockPoints[i];
+                if (_lockPointPhases.TryGetValue(lockPoint, out int pointPhase) &&
+                    pointPhase == phase &&
+                    lockPoint.State != TargetState.Processed)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void AdvancePhase()
+        {
+            _currentPhase++;
+            if (_currentPhase >= _phaseCount)
+            {
+                return;
+            }
+
+            ActivatePhase(_currentPhase);
+
+            if (BeatManager.Instance != null)
+            {
+                float pulse = 1f + _currentPhase * 0.15f;
+                _bodyMaterial.SetColor("_EmissionColor", _bodyColor * pulse);
+            }
         }
 
         private void CreateMaterials()
         {
             _bodyMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             _bodyMaterial.color = _bodyColor;
+            _bodyMaterial.EnableKeyword("_EMISSION");
+            _bodyMaterial.SetColor("_EmissionColor", _bodyColor * 0.4f);
 
             _lockPointMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             _lockPointMaterial.color = _lockPointColor;
             _lockPointMaterial.EnableKeyword("_EMISSION");
             _lockPointMaterial.SetColor("_EmissionColor", _lockPointColor * 1.8f);
+
+            _inactiveLockPointMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _inactiveLockPointMaterial.color = _inactiveColor;
+            _inactiveLockPointMaterial.EnableKeyword("_EMISSION");
+            _inactiveLockPointMaterial.SetColor("_EmissionColor", _inactiveColor * 0.5f);
         }
 
         private void ClearChildren()

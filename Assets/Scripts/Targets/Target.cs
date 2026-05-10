@@ -16,11 +16,13 @@ namespace AreaX.Targets
         [Header("Settings")]
         [SerializeField] private VisualEffect _targetVFX;
         [SerializeField] private Collider _collider;
+        [SerializeField] private bool _isLockable = true;
         
         public event Action<Target> Locked;
         public event Action<Target> Hit;
 
         public TargetState State { get; private set; } = TargetState.Idle;
+        public bool IsLockable => _isLockable && State != TargetState.Processed;
 
         private void Start()
         {
@@ -28,6 +30,8 @@ namespace AreaX.Targets
             {
                 _collider = GetComponent<Collider>();
             }
+
+            ApplyLockableState();
 
             if (AreaX.Managers.StageManager.Instance != null)
             {
@@ -37,6 +41,8 @@ namespace AreaX.Targets
 
         public virtual void OnLockOn()
         {
+            if (!IsLockable) return;
+
             if (State == TargetState.Idle)
             {
                 State = TargetState.Locked;
@@ -60,6 +66,7 @@ namespace AreaX.Targets
 
             State = TargetState.Processed;
             Hit?.Invoke(this);
+            SetLockable(false);
 
             // Disable collider so it can't be locked again
             if (_collider != null) _collider.enabled = false;
@@ -73,6 +80,34 @@ namespace AreaX.Targets
             {
                 // Fallback if no VFX
                 gameObject.SetActive(false);
+            }
+        }
+
+        public void SetLockable(bool isLockable)
+        {
+            if (State == TargetState.Processed)
+            {
+                _isLockable = false;
+            }
+            else
+            {
+                _isLockable = isLockable;
+            }
+
+            ApplyLockableState();
+        }
+
+        private void ApplyLockableState()
+        {
+            if (_collider != null)
+            {
+                _collider.enabled = IsLockable;
+            }
+
+            Renderer renderer = GetComponent<Renderer>();
+            if (renderer != null && State != TargetState.Processed)
+            {
+                renderer.enabled = _isLockable;
             }
         }
     }

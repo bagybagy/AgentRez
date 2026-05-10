@@ -50,6 +50,7 @@ namespace AreaX.Player
         private void TryLock(Target target)
         {
             if (target.State != TargetState.Idle) return; // Already locked or processed
+            if (!target.IsLockable) return;
             if (_lockedTargets.Contains(target)) return;
 
             // Register Lock
