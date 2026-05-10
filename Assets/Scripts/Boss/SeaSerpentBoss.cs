@@ -36,6 +36,7 @@ namespace AreaX.Boss
         [SerializeField] private float _particleLife = 0.8f;
 
         private readonly List<Transform> _segments = new List<Transform>();
+        private readonly List<Transform> _links = new List<Transform>();
         private readonly List<Target> _lockPoints = new List<Target>();
         private readonly Dictionary<Target, int> _lockPointPhases = new Dictionary<Target, int>();
         private Material _bodyMaterial;
@@ -75,6 +76,7 @@ namespace AreaX.Boss
             CreateMaterials();
 
             _segments.Clear();
+            _links.Clear();
             _lockPoints.Clear();
             _lockPointPhases.Clear();
 
@@ -83,6 +85,11 @@ namespace AreaX.Boss
                 Transform segment = CreateSegment(i);
                 _segments.Add(segment);
                 CreateLockPoints(segment, i);
+            }
+
+            for (int i = 0; i < _segments.Count - 1; i++)
+            {
+                _links.Add(CreateLink(i));
             }
 
             _remainingLockPoints = _lockPoints.Count;
@@ -111,6 +118,27 @@ namespace AreaX.Boss
             }
 
             return segment.transform;
+        }
+
+        private Transform CreateLink(int index)
+        {
+            GameObject link = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            link.name = $"SerpentBodyLink_{index:00}";
+            link.transform.SetParent(transform, false);
+
+            Renderer renderer = link.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.sharedMaterial = _bodyMaterial;
+            }
+
+            Collider collider = link.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
+
+            return link.transform;
         }
 
         private void CreateLockPoints(Transform segment, int segmentIndex)
@@ -176,6 +204,28 @@ namespace AreaX.Boss
                         segment.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
                     }
                 }
+            }
+
+            UpdateBodyLinks();
+        }
+
+        private void UpdateBodyLinks()
+        {
+            for (int i = 0; i < _links.Count; i++)
+            {
+                Transform link = _links[i];
+                Vector3 start = _segments[i].position;
+                Vector3 end = _segments[i + 1].position;
+                Vector3 delta = end - start;
+                float length = delta.magnitude;
+
+                link.position = (start + end) * 0.5f;
+                if (length > 0.01f)
+                {
+                    link.rotation = Quaternion.FromToRotation(Vector3.up, delta.normalized);
+                }
+
+                link.localScale = new Vector3(_segmentRadius * 0.68f, length * 0.5f, _segmentRadius * 0.68f);
             }
         }
 
