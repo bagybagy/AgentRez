@@ -53,7 +53,9 @@ namespace AreaX.Combat
             // Let's rely on BeatManager's helper if I added one, or calc manually.
             // I added GetNextQuantizedTime(currentTime, 1.0) to BeatManager.
             
-            double nextBeatTime = BeatManager.Instance.GetNextQuantizedTime(currentTime, 1.0);
+            double nextBeatTime = MusicManager.Instance != null && MusicManager.Instance.Clock != null
+                ? MusicManager.Instance.Clock.GetNextQuantizedSongTime(1.0)
+                : BeatManager.Instance.GetNextQuantizedTime(currentTime, 1.0);
             
             // Time until next beat
             double timeToNext = nextBeatTime - currentTime;

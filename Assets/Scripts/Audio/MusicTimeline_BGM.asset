@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d041c515b8e14dde93ba47b716b93e9b, type: 3}
+  m_Name: MusicTimeline_BGM
+  m_EditorClassIdentifier: 
+  _cues:
+  - Id: Intro
+    Type: 0
+    Measure: 0
+    Beat: 0
+    Value: 0.2
+    Color: {r: 0.05, g: 0.3, b: 0.7, a: 1}
+  - Id: FirstLockPattern
+    Type: 3
+    Measure: 12
+    Beat: 0
+    Value: 0.45
+    Color: {r: 0.1, g: 0.75, b: 1, a: 1}
+  - Id: FirstBurst
+    Type: 2
+    Measure: 16
+    Beat: 0
+    Value: 0.65
+    Color: {r: 0.6, g: 0.15, b: 1, a: 1}
+  - Id: DeepSpaceBreak
+    Type: 0
+    Measure: 24
+    Beat: 0
+    Value: 0.25
+    Color: {r: 0.02, g: 0.08, b: 0.2, a: 1}
+  - Id: SerpentAwakens
+    Type: 3
+    Measure: 44
+    Beat: 0
+    Value: 0.8
+    Color: {r: 0.1, g: 0.95, b: 1, a: 1}
+  - Id: BossPressure
+    Type: 2
+    Measure: 48
+    Beat: 0
+    Value: 1
+    Color: {r: 1, g: 0.15, b: 0.8, a: 1}
+  - Id: Climax
+    Type: 2
+    Measure: 64
+    Beat: 0
+    Value: 1
+    Color: {r: 1, g: 0.35, b: 0.08, a: 1}
+  - Id: CollapseWindow
+    Type: 3
+    Measure: 80
+    Beat: 0
+    Value: 0.75
+    Color: {r: 0.25, g: 0.6, b: 1, a: 1}
+  _intensity:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.12
+      inSlope: 0
+      outSlope: 1.75
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.18
+      value: 0.55
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.42
+      value: 0.22
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.62
+      value: 0.95
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.86
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.45
+      inSlope: -1.5
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

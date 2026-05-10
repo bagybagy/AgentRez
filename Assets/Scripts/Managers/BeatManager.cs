@@ -98,6 +98,7 @@ namespace AreaX.Managers
              
              double duration = _secondsPerBeat * division;
              double remainder = currentTime % duration;
+             if (remainder < 0d) remainder += duration;
              return currentTime + (duration - remainder);
         }
         

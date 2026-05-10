@@ -17,7 +17,7 @@ namespace AreaX.Managers
             get
             {
                 if (!_hasStarted || _musicData == null) return 0d;
-                return Mathf.Max(0f, (float)(AudioSettings.dspTime - _dspStartTime - _musicData.Offset));
+                return AudioSettings.dspTime - _dspStartTime - _musicData.Offset;
             }
         }
 
@@ -41,7 +41,9 @@ namespace AreaX.Managers
             {
                 double secondsPerBeat = SecondsPerBeat;
                 if (secondsPerBeat <= 0d) return 0d;
-                return (SongTime % secondsPerBeat) / secondsPerBeat;
+                double phase = SongTime % secondsPerBeat;
+                if (phase < 0d) phase += secondsPerBeat;
+                return phase / secondsPerBeat;
             }
         }
 
@@ -74,6 +76,7 @@ namespace AreaX.Managers
 
             double currentTime = SongTime;
             double remainder = currentTime % quantum;
+            if (remainder < 0d) remainder += quantum;
             if (remainder <= double.Epsilon) return currentTime;
 
             return currentTime + (quantum - remainder);

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: MusicData_BGM
   m_EditorClassIdentifier: 
   Clip: {fileID: 8300000, guid: 96e83214811f6dc4ea9cac0853f73db1, type: 3}
-  BPM: 140
+  BPM: 143
   Signature: 4
-  Offset: 0
+  Offset: 0.08
+  Timeline: {fileID: 11400000, guid: 04d1a2334ec24b1a9599cf46fb9a2d77, type: 2}
