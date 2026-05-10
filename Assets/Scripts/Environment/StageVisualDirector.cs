@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using System.Collections;
 
 namespace AreaX.Environment
 {
+    [DefaultExecutionOrder(-10000)]
     public class StageVisualDirector : MonoBehaviour
     {
         [SerializeField] private Color _spaceColor = new Color(0.002f, 0.004f, 0.012f, 1f);
@@ -13,16 +15,48 @@ namespace AreaX.Environment
 
         public static StageVisualDirector CreateDefault()
         {
+            StageVisualDirector existing = FindFirstObjectByType<StageVisualDirector>();
+            if (existing != null)
+            {
+                existing.ApplyVisualState();
+                return existing;
+            }
+
             GameObject directorObject = new GameObject("StageVisualDirector");
             return directorObject.AddComponent<StageVisualDirector>();
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void EnsureRuntimeDirector()
+        {
+            CreateDefault();
+        }
+
         private void Awake()
+        {
+            ApplyVisualState();
+        }
+
+        private void OnEnable()
+        {
+            StartCoroutine(ReapplyForStartupFrames());
+        }
+
+        public void ApplyVisualState()
         {
             ApplyCameraLook();
             ApplyRenderSettings();
             HidePrototypeGeometry();
             EnsurePostProcessing();
+        }
+
+        private IEnumerator ReapplyForStartupFrames()
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                ApplyVisualState();
+                yield return null;
+            }
         }
 
         private void ApplyCameraLook()
@@ -57,6 +91,16 @@ namespace AreaX.Environment
             if (plane != null)
             {
                 plane.SetActive(false);
+            }
+
+            MeshRenderer[] renderers = FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                GameObject obj = renderers[i].gameObject;
+                if (obj.name == "Plane" || obj.name.StartsWith("Plane "))
+                {
+                    obj.SetActive(false);
+                }
             }
         }
 
