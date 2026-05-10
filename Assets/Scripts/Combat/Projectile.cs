@@ -15,6 +15,7 @@ namespace AreaX.Combat
         private double _impactTime;
         private Vector3 _velocity;
         private bool _isInitialized = false;
+        private bool _hitSoundScheduled;
 
         public void Initialize(Target target, double impactTime)
         {
@@ -27,6 +28,11 @@ namespace AreaX.Combat
             _velocity += transform.forward * 10f;
 
             _isInitialized = true;
+
+            if (AreaX.Audio.HitSoundSynthesizer.Instance != null)
+            {
+                _hitSoundScheduled = AreaX.Audio.HitSoundSynthesizer.Instance.ScheduleHitSoundAtSongTime(_impactTime);
+            }
         }
 
         private void Update()
@@ -89,8 +95,7 @@ namespace AreaX.Combat
             if (_target != null)
             {
                 _target.OnHit();
-                
-                if (AreaX.Audio.HitSoundSynthesizer.Instance != null)
+                if (!_hitSoundScheduled && AreaX.Audio.HitSoundSynthesizer.Instance != null)
                 {
                     AreaX.Audio.HitSoundSynthesizer.Instance.PlayHitSound();
                 }
