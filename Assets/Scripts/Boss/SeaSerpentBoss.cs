@@ -39,12 +39,15 @@ namespace AreaX.Boss
 
         private readonly List<Transform> _segments = new List<Transform>();
         private readonly List<Transform> _links = new List<Transform>();
+        private readonly List<LineRenderer> _energyRings = new List<LineRenderer>();
         private readonly List<Target> _lockPoints = new List<Target>();
         private readonly Dictionary<Target, int> _lockPointPhases = new Dictionary<Target, int>();
         private Material _bodyMaterial;
         private Material _lockPointMaterial;
         private Material _inactiveLockPointMaterial;
         private Material _eyeMaterial;
+        private Material _energyLineMaterial;
+        private LineRenderer _spineLine;
         private int _remainingLockPoints;
         private int _currentPhase;
         private bool _defeatStarted;
@@ -84,6 +87,7 @@ namespace AreaX.Boss
 
             _segments.Clear();
             _links.Clear();
+            _energyRings.Clear();
             _lockPoints.Clear();
             _lockPointPhases.Clear();
 
@@ -98,6 +102,9 @@ namespace AreaX.Boss
             {
                 _links.Add(CreateLink(i));
             }
+
+            _spineLine = CreateSpineLine();
+            CreateEnergyRings();
 
             _remainingLockPoints = _lockPoints.Count;
             _currentPhase = 0;
@@ -253,6 +260,7 @@ namespace AreaX.Boss
             }
 
             UpdateBodyLinks();
+            UpdateEnergyLines(beatPulse);
             AnimateLockPointPulse(beatPulse);
         }
 
@@ -273,6 +281,70 @@ namespace AreaX.Boss
                 }
 
                 link.localScale = new Vector3(_segmentRadius * 0.68f, length * 0.5f, _segmentRadius * 0.68f);
+            }
+        }
+
+        private LineRenderer CreateSpineLine()
+        {
+            GameObject lineObject = new GameObject("SerpentEnergySpine");
+            lineObject.transform.SetParent(transform, false);
+
+            LineRenderer line = lineObject.AddComponent<LineRenderer>();
+            line.sharedMaterial = _energyLineMaterial;
+            line.positionCount = _segments.Count;
+            line.widthMultiplier = 0.12f;
+            line.numCapVertices = 4;
+            line.numCornerVertices = 4;
+            line.useWorldSpace = true;
+            return line;
+        }
+
+        private void CreateEnergyRings()
+        {
+            for (int i = 1; i < _segments.Count - 1; i += 3)
+            {
+                GameObject ringObject = new GameObject($"SerpentEnergyRing_{i:00}");
+                ringObject.transform.SetParent(_segments[i], false);
+
+                LineRenderer ring = ringObject.AddComponent<LineRenderer>();
+                ring.sharedMaterial = _energyLineMaterial;
+                ring.positionCount = 48;
+                ring.loop = true;
+                ring.widthMultiplier = 0.045f;
+                ring.numCapVertices = 2;
+                ring.useWorldSpace = false;
+                _energyRings.Add(ring);
+            }
+        }
+
+        private void UpdateEnergyLines(float beatPulse)
+        {
+            if (_spineLine != null)
+            {
+                _spineLine.widthMultiplier = Mathf.Lerp(0.08f, 0.22f, beatPulse);
+                _spineLine.positionCount = _segments.Count;
+                for (int i = 0; i < _segments.Count; i++)
+                {
+                    Vector3 lift = Vector3.up * _segmentRadius * (0.72f + beatPulse * 0.2f);
+                    _spineLine.SetPosition(i, _segments[i].position + lift);
+                }
+            }
+
+            float songTime = GetSongTime();
+            for (int i = 0; i < _energyRings.Count; i++)
+            {
+                LineRenderer ring = _energyRings[i];
+                float radius = _segmentRadius * Mathf.Lerp(0.92f, 1.22f, beatPulse);
+                float spin = songTime * (0.8f + i * 0.08f);
+                ring.transform.localRotation = Quaternion.Euler(72f, spin * 90f, 0f);
+                ring.widthMultiplier = Mathf.Lerp(0.025f, 0.075f, beatPulse);
+
+                for (int p = 0; p < ring.positionCount; p++)
+                {
+                    float angle = p / (float)ring.positionCount * Mathf.PI * 2f;
+                    Vector3 local = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
+                    ring.SetPosition(p, local);
+                }
             }
         }
 
@@ -443,6 +515,9 @@ namespace AreaX.Boss
             _eyeMaterial.color = _eyeColor;
             _eyeMaterial.EnableKeyword("_EMISSION");
             _eyeMaterial.SetColor("_EmissionColor", _eyeColor * 3f);
+
+            _energyLineMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            _energyLineMaterial.color = _lockPointColor;
         }
 
         private void SpawnParticleBurst(Vector3 position, Color color, int count, float size, float speed)
