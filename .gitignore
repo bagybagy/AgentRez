@@ -40,3 +40,19 @@ sysinfo.txt
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Fresh Unity 6 production, isolated from the archived prototype.
+**/Library/
+**/Temp/
+**/Obj/
+**/obj/
+**/Logs/
+**/UserSettings/
+**/MemoryCaptures/
+**/.vs/
+/Liminal/Builds/
+/Liminal/Verification/
+/Liminal/*.csproj
+/Liminal/*.sln
+/Liminal/*.slnx
+/Liminal/*.log
