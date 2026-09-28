@@ -6,7 +6,7 @@
 
 - Unity **6000.3.13f1** / URP **17.3.0**
 - シーン: `Liminal/Assets/Liminal/Production/AbyssalChoir.unity`
-- ローカル Windows ビルド: `Liminal/Builds/Windows/Liminal.exe`
+- Windows ビルド（リポジトリ同梱）: `Liminal/Builds/Windows/Liminal.exe`
 - 詳細: [Liminal/README.md](Liminal/README.md)
 
 リポジトリ直下に残っている `Assets` / `Packages` / `ProjectSettings` は旧試作です。

@@ -1,0 +1,2 @@
+# Keep distributed Unity players byte-for-byte identical to the verified build.
+Liminal/Builds/Windows/** -text -diff

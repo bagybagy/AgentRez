@@ -50,7 +50,11 @@ Desktop.ini
 **/UserSettings/
 **/MemoryCaptures/
 **/.vs/
-/Liminal/Builds/
+/Liminal/Builds/*
+!/Liminal/Builds/Windows/
+/Liminal/Builds/Windows/*_BackUpThisFolder_ButDontShipItWithYourGame/
+/Liminal/Builds/Windows/*_BurstDebugInformation_DoNotShip/
+/Liminal/Builds/Windows/*.log
 /Liminal/Verification/
 /Liminal/*.csproj
 /Liminal/*.sln
