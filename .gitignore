@@ -60,3 +60,7 @@ Desktop.ini
 /Liminal/*.sln
 /Liminal/*.slnx
 /Liminal/*.log
+
+# Keep the current PV masters local; publish only the finished encodes.
+/Liminal/Video/PV/LIMINAL_raw.mp4
+/Liminal/Video/PV/*.log
